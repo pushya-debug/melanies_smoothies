@@ -44,17 +44,19 @@ if st.button('Submit Order'):
             st.subheader(f"{fruit_chosen} Nutrition Information")
             try:
                 # API call to Fruityvice
-                fruityvice_response = requests.get(f"https://fruityvice.com/api/fruit/{fruit_chosen.lower()}")
+                fruit_name = fruit_chosen.lower().replace(" ", "-")  # Format fruit name for API
+                fruityvice_response = requests.get(f"https://fruityvice.com/api/fruit/{fruit_name}")
                 fruityvice_response.raise_for_status()  # Raise an exception for HTTP errors
                 fruityvice_data = fruityvice_response.json()  # Convert response to JSON
                 
                 # Extract relevant details from API response
                 fruit_name = fruityvice_data.get('name', 'Unknown')
-                calories = fruityvice_data.get('nutritions', {}).get('calories', 'Unknown')
-                fat = fruityvice_data.get('nutritions', {}).get('fat', 'Unknown')
-                sugar = fruityvice_data.get('nutritions', {}).get('sugar', 'Unknown')
-                carbs = fruityvice_data.get('nutritions', {}).get('carbohydrates', 'Unknown')
-                protein = fruityvice_data.get('nutritions', {}).get('protein', 'Unknown')
+                nutritions = fruityvice_data.get('nutritions', {})
+                calories = nutritions.get('calories', 'Unknown')
+                fat = nutritions.get('fat', 'Unknown')
+                sugar = nutritions.get('sugar', 'Unknown')
+                carbs = nutritions.get('carbohydrates', 'Unknown')
+                protein = nutritions.get('protein', 'Unknown')
 
                 # Display formatted nutrition information
                 st.write(f"**Fruit Name:** {fruit_name}")
