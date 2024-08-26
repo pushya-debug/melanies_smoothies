@@ -2,6 +2,7 @@
 import streamlit as st
 import pandas as pd
 from snowflake.snowpark.functions import col
+import requests
 
 # Write directly to the app
 st.title(":cup_with_straw: Customize Your Smoothie! :cup_with_straw:")
@@ -50,10 +51,19 @@ if st.button('Submit Order'):
             VALUES ('{ingredients_string}', '{name_on_order}', {order_filled_value})
         """
         st.write(my_insert_stmt)  # For debugging: shows the query that will be executed
-        # st.stop()  # Uncomment to stop execution and view query
+        # Uncomment to stop execution and view query
+        # st.stop()
 
         # Execute the query
         session.sql(my_insert_stmt).collect()
         st.success('Your Smoothie is ordered!', icon="✅")
     else:
         st.error('Please enter a name and select at least one ingredient.', icon="❌")
+
+# API call to Fruityvice
+try:
+    fruityvice_response = requests.get("https://fruityvice.com/api/fruit/watermelon")
+    fruityvice_data = fruityvice_response.json()  # Convert response to JSON
+    st.write(fruityvice_data)  # Display the API response data
+except Exception as e:
+    st.error(f"Error fetching data from Fruityvice: {e}", icon="❌")
