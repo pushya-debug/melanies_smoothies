@@ -6,16 +6,13 @@ import requests
 
 # Write directly to the app
 st.title(":cup_with_straw: Customize Your Smoothie! :cup_with_straw:")
-st.write(
-    """Customize and order your smoothie:
-    """)
+st.write("Customize and order your smoothie:")
 
 # Input for name on order
 name_on_order = st.text_input('Name on Smoothie:')
 st.write('The name on Smoothie will be:', name_on_order)
 
 # Checkbox to mark the order as filled or not filled
-# This is for editing existing orders, it’s set to False by default for new orders
 order_filled = st.checkbox('Mark as filled', value=False)
 
 # Get Snowflake session
@@ -42,6 +39,35 @@ if st.button('Submit Order'):
         # Create the ingredients string
         ingredients_string = ' '.join(ingredients_list)
         
+        # Display nutrition information for each selected fruit
+        for fruit_chosen in ingredients_list:
+            st.subheader(f"{fruit_chosen} Nutrition Information")
+            try:
+                # API call to Fruityvice
+                fruityvice_response = requests.get(f"https://fruityvice.com/api/fruit/{fruit_chosen.lower()}")
+                fruityvice_response.raise_for_status()  # Raise an exception for HTTP errors
+                fruityvice_data = fruityvice_response.json()  # Convert response to JSON
+                
+                # Extract relevant details from API response
+                fruit_name = fruityvice_data.get('name', 'Unknown')
+                calories = fruityvice_data.get('nutritions', {}).get('calories', 'Unknown')
+                fat = fruityvice_data.get('nutritions', {}).get('fat', 'Unknown')
+                sugar = fruityvice_data.get('nutritions', {}).get('sugar', 'Unknown')
+                carbs = fruityvice_data.get('nutritions', {}).get('carbohydrates', 'Unknown')
+                protein = fruityvice_data.get('nutritions', {}).get('protein', 'Unknown')
+
+                # Display formatted nutrition information
+                st.write(f"**Fruit Name:** {fruit_name}")
+                st.write(f"**Calories:** {calories} kcal")
+                st.write(f"**Fat:** {fat} g")
+                st.write(f"**Sugar:** {sugar} g")
+                st.write(f"**Carbohydrates:** {carbs} g")
+                st.write(f"**Protein:** {protein} g")
+            except requests.RequestException as e:
+                st.error(f"Error fetching data for {fruit_chosen}: {e}", icon="❌")
+            except ValueError as e:
+                st.error(f"Error processing data for {fruit_chosen}: {e}", icon="❌")
+        
         # Determine if the order is filled based on the checkbox
         order_filled_value = 'TRUE' if order_filled else 'FALSE'
         
@@ -59,18 +85,3 @@ if st.button('Submit Order'):
         st.success('Your Smoothie is ordered!', icon="✅")
     else:
         st.error('Please enter a name and select at least one ingredient.', icon="❌")
-
-# API call to Fruityvice
-try:
-    fruityvice_response = requests.get("https://fruityvice.com/api/fruit/watermelon")
-    fruityvice_response.raise_for_status()  # Raise an exception for HTTP errors
-    fruityvice_data = fruityvice_response.json()  # Convert response to JSON
-    
-    # Display the API response data
-    st.write("Fruityvice Data:", fruityvice_data)
-    fv_df = pd.DataFrame(fruityvice_data, index=[0])
-    st.dataframe(fv_df, use_container_width=True)
-except requests.RequestException as e:
-    st.error(f"Error fetching data from Fruityvice: {e}", icon="❌")
-except ValueError as e:
-    st.error(f"Error processing Fruityvice response: {e}", icon="❌")
