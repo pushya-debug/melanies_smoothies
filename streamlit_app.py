@@ -63,7 +63,14 @@ if st.button('Submit Order'):
 # API call to Fruityvice
 try:
     fruityvice_response = requests.get("https://fruityvice.com/api/fruit/watermelon")
+    fruityvice_response.raise_for_status()  # Raise an exception for HTTP errors
     fruityvice_data = fruityvice_response.json()  # Convert response to JSON
-    st.write(fruityvice_data)  # Display the API response data
-except Exception as e:
+    
+    # Display the API response data
+    st.write("Fruityvice Data:", fruityvice_data)
+    fv_df = pd.DataFrame(fruityvice_data, index=[0])
+    st.dataframe(fv_df, use_container_width=True)
+except requests.RequestException as e:
     st.error(f"Error fetching data from Fruityvice: {e}", icon="❌")
+except ValueError as e:
+    st.error(f"Error processing Fruityvice response: {e}", icon="❌")
