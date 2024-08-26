@@ -18,7 +18,8 @@ st.write('The name on Smoothie will be:', name_on_order)
 order_filled = st.checkbox('Mark as filled', value=False)
 
 # Get Snowflake session
-session = get_active_session()
+cnx = st.connection("snowflake")
+session = cnx.session()
 
 # Fetch the available fruit options from Snowflake
 my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'))
